@@ -1,0 +1,77 @@
+*:disabled {
+  cursor: not-allowed;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  --uno: 'bg-brand-base/50';
+}
+
+*::-webkit-scrollbar-thumb {
+  --uno: 'bg-brand-primary/40 rounded';
+}
+* {
+  scroll-behavior: smooth;
+}
+
+html {
+  box-sizing: border-box;
+}
+
+body {
+  --uno: 'font-main bg-brand-base text-gray-100 overflow-hidden';
+}
+
+a {
+  --uno: 'text-blue-400 hover:brightness-[130%]';
+}
+
+button {
+  all: unset;
+  cursor: pointer;
+  background: theme('colors.gray.200');
+  color: theme('colors.gray.900');
+  padding: 5px 10px;
+}
+
+.bg-pattern {
+  width: 100%;
+  height: 100%;
+
+  background: transparent;
+  --gap: 5em;
+  --line: 1px;
+  --color: rgba(255, 255, 255, 0.2);
+
+  background-image: linear-gradient(
+      -90deg,
+      transparent calc(var(--gap) - var(--line)),
+      var(--color) calc(var(--gap) - var(--line) + 1px),
+      var(--color) var(--gap)
+    ),
+    linear-gradient(
+      0deg,
+      transparent calc(var(--gap) - var(--line)),
+      var(--color) calc(var(--gap) - var(--line) + 1px),
+      var(--color) var(--gap)
+    );
+  background-size: var(--gap) var(--gap);
+}
+
+.router-link-active {
+  --uno: 'text-brand-action';
+}
+.router-link-exact-active {
+  --uno: 'text-brand-action brightness-[125%]';
+}
+
+.form-wrapper-width {
+  --uno: 'md:max-w-6/8 lg:max-w-5/8 xl:max-w-3/8 w-full';
+}
+
+.modal-content-width {
+  --uno: 'w-90vw lg:w-40vw md:w-70vw';
+}
