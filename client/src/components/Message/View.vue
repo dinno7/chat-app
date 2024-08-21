@@ -8,7 +8,7 @@ const messengerStore = useMessengerStore();
 const userStore = useUserStore();
 
 const messageBox = ref<HTMLDivElement | null>(null);
-const showGoToBottom = ref(true);
+const showGoToBottom = ref(false);
 const { y } = useScroll(messageBox, {
   behavior: 'smooth',
   onScroll(e) {
