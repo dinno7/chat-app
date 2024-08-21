@@ -1,0 +1,64 @@
+services:
+  nginx:
+    depends_on:
+      - api
+      - client
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile.dev
+    restart: always
+    ports:
+      - 8080:80
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - '27017:27017'
+    volumes:
+      - chat-app-mongo_data:/data/db
+
+  redis:
+    image: redis
+    restart: always
+    ports:
+      - '6379:6379'
+
+  api:
+    depends_on:
+      - mongo
+      - redis
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    volumes:
+      - /app/node_modules
+      - ./server:/app
+    env_file:
+      - ./server/.env
+    environment:
+      - REDIS_HOST=redis
+      - DATABASE_URI=mongodb://mongo:27017/chat-app
+      - JWT_TOKEN_AUDIENCE=http://client:4000
+      - JWT_TOKEN_ISSUER=http://api:3000
+      - CLIENT_URL=http://client:4000
+
+  client:
+    depends_on:
+      - api
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    volumes:
+      - /app/node_modules
+      - ./client:/app
+    env_file:
+      - ./client/.env
+    environment:
+      - VITE_SERVER_URL=
+      - VITE_SOCKET_IO_URL=
+
+volumes:
+  chat-app-mongo_data:
