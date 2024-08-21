@@ -37,9 +37,10 @@ async function submitSignUp() {
   const { data, error } = await $useFetch('auth/signup', { credentials: 'include' }, {})
     .post(signUpData)
     .json<BasePayload<SignAuthPayload>>();
+  sendingData.value = false;
 
   if (error.value || !data.value?.ok) {
-    let msg = error.value.message;
+    let msg = error.value?.message || "Something went wrong";
     return $toast.error(msg, {
       title: 'Sign up failed',
       timeout: 5000,
@@ -52,7 +53,6 @@ async function submitSignUp() {
     title: 'Sign up successful',
     timeout: 5000,
   });
-  sendingData.value = false;
 
   return router.push({ force: true, replace: true, name: 'home' });
 }

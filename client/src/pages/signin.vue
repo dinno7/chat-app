@@ -32,9 +32,15 @@ const submitToSignIn = async () => {
   const { data, error } = await $useFetch('auth/signin', { credentials: 'include' }, {})
     .post(signInData)
     .json<BasePayload<SignAuthPayload>>();
+  sendingData.value = false;
 
-  if (error.value || !data.value?.ok)
-    throw new Error(error.value?.message || 'Some problem happened in signing in');
+  if (error.value || !data.value?.ok) {
+    let msg = error.value?.message || "Something went wrong";
+    return $toast.error(msg, {
+      title: 'Sign up failed',
+      timeout: 5000,
+    });
+  }
 
   const { data: token } = data.value;
   setAuthToken(token.accessToken);
@@ -43,7 +49,6 @@ const submitToSignIn = async () => {
     title: 'Login successful',
     timeout: 5000,
   });
-  sendingData.value = false;
 
   return router.push({ force: true, replace: true, name: 'home' });
 };
