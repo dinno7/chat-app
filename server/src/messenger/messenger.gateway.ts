@@ -208,12 +208,15 @@ export class MessengerService
     @ActiveSocketUser() activeUser: UserDocument,
     @MessageBody() receiverUserId: string,
   ) {
+    const isSavedMessage = receiverUserId === activeUser.id;
+
     const conversation = await this.ConversationModel.findOne({
       $or: [
         { to: receiverUserId, from: activeUser.id },
         { to: activeUser.id, from: receiverUserId },
       ],
     });
+
     if (conversation?.messages)
       await this.MessageModel.updateMany(
         {
@@ -227,13 +230,18 @@ export class MessengerService
         },
       );
 
+    if (!conversation) return;
+
     await conversation.populate('messages');
 
-    this.server
-      .to(receiverUserId)
-      .emit(MESSENGER_EVENTS.Message, conversation.messages);
+    if (!isSavedMessage) {
+      this.server
+        .to(receiverUserId)
+        .emit(MESSENGER_EVENTS.Message, conversation.messages);
+    }
 
     const conversations = await this.__getChatConversations(activeUser.id);
+
     return {
       event: MESSENGER_EVENTS.GetChatConversations,
       data: conversations,
