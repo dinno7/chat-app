@@ -11,12 +11,12 @@ import {
 } from '@nestjs/websockets';
 import { Model, isValidObjectId } from 'mongoose';
 import { Server, Socket } from 'socket.io';
-import { RedisService } from 'src/redis/redis.service';
+import { MemoryStorageService } from 'src/memory-storage/memory-storage.service';
 import { UserDocument } from 'src/user/schemas/users.schema';
 import { UserService } from 'src/user/user.service';
 import { ActiveSocketUser } from 'src/ws/decorators/active-socket-user.decorator';
 import { AuthenticationWsGuard } from 'src/ws/guards/authentication-ws.guard';
-import { ONLINE_USER_REDIS_SET_KEY } from './messenger.constants';
+import { ONLINE_USERS_MEMORY_STORAGE_SET_KEY } from './messenger.constants';
 import { Conversation } from './schemas/conversation.schema';
 import { Message, MessageDocument } from './schemas/message.schema';
 import { MESSENGER_EVENTS } from './types/emits.type';
@@ -29,7 +29,7 @@ export class MessengerService
   implements OnGatewayConnection, OnGatewayDisconnect
 {
   constructor(
-    private readonly redisService: RedisService,
+    private readonly memoryStorage: MemoryStorageService,
     private readonly userService: UserService,
     @InjectModel(Message.name) private readonly MessageModel: Model<Message>,
     @InjectModel(Conversation.name)
@@ -48,7 +48,10 @@ export class MessengerService
     //? Create a room
     client.join(user.id);
 
-    await this.redisService.pushToSet(ONLINE_USER_REDIS_SET_KEY, user.id);
+    await this.memoryStorage.pushToSet(
+      ONLINE_USERS_MEMORY_STORAGE_SET_KEY,
+      user.id,
+    );
 
     this.server.emit(
       MESSENGER_EVENTS.GetOnlineUsers,
@@ -62,8 +65,8 @@ export class MessengerService
       client.handshake.auth?.token,
     );
     if (user?.id)
-      await this.redisService.removeElFromSet(
-        ONLINE_USER_REDIS_SET_KEY,
+      await this.memoryStorage.removeElFromSet(
+        ONLINE_USERS_MEMORY_STORAGE_SET_KEY,
         user.id,
       );
 
@@ -251,7 +254,9 @@ export class MessengerService
   private async __getAllOnlineUsers() {
     return [
       ...new Set(
-        await this.redisService.getSetMembers(ONLINE_USER_REDIS_SET_KEY),
+        await this.memoryStorage.getSetMembers(
+          ONLINE_USERS_MEMORY_STORAGE_SET_KEY,
+        ),
       ),
     ];
   }

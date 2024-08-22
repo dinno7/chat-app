@@ -3,8 +3,8 @@ import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CommonModule } from './common/common.module';
 import { IamModule } from './iam/iam.module';
+import { MemoryStorageModule } from './memory-storage/memory-storage.module';
 import { MessengerModule } from './messenger/messenger.module';
-import { RedisModule } from './redis/redis.module';
 import { UsersModule } from './user/user.module';
 
 @Module({
@@ -21,7 +21,7 @@ import { UsersModule } from './user/user.module';
     MessengerModule,
     UsersModule,
     IamModule,
-    RedisModule,
+    MemoryStorageModule,
   ],
 })
 export class AppModule {}

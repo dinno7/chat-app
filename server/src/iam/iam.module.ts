@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
-import { RedisModule } from 'src/redis/redis.module';
+import { MemoryStorageModule } from 'src/memory-storage/memory-storage.module';
 import { UsersModule } from 'src/user/user.module';
 import { AuthenticationController } from './authentication/authentication.controller';
 import { AuthenticationService } from './authentication/authentication.service';
@@ -18,7 +18,7 @@ import { ZodModule } from './zod/zod.module';
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
     UsersModule,
-    RedisModule,
+    MemoryStorageModule,
     ZodModule,
   ],
   providers: [

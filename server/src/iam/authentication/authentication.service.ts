@@ -7,7 +7,7 @@ import {
 import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'crypto';
-import { RedisService } from 'src/redis/redis.service';
+import { MemoryStorageService } from 'src/memory-storage/memory-storage.service';
 import { UserService } from 'src/user/user.service';
 import jwtConfig from '../configs/jwt.config';
 import { HashingService } from '../hashing/hashing.service';
@@ -24,7 +24,7 @@ export class AuthenticationService {
     private readonly jwtService: JwtService,
     private readonly hashingService: HashingService,
     private readonly userService: UserService,
-    private readonly redisService: RedisService,
+    private readonly memoryStorage: MemoryStorageService,
   ) {}
 
   async signUp(signUpDto: SignUpDto) {
@@ -40,7 +40,7 @@ export class AuthenticationService {
       name: signUpDto.name,
       email: signUpDto.email,
       password: hashedPassword,
-      profilePicture: '/images/user_default.png',
+      profilePicture: '/images/default_user.png',
     });
 
     return this.__generateTokens(user.id);
@@ -78,12 +78,12 @@ export class AuthenticationService {
 
       const { tokenId, id: userId } = token;
 
-      if (!(await this.redisService.get(tokenId))) throw new Error();
+      if (!(await this.memoryStorage.get(tokenId))) throw new Error();
 
       const user = await this.userService.getUserById(userId);
       if (!user) throw new Error();
 
-      if (!(await this.redisService.remove(tokenId))) throw new Error();
+      if (!(await this.memoryStorage.remove(tokenId))) throw new Error();
       return true;
     } catch (error) {
       console.error(
@@ -113,7 +113,7 @@ export class AuthenticationService {
       const user = await this.userService.getUserById(userId);
       if (!user) throw new Error();
 
-      const isRefreshTokenValid = await this.redisService.validate(
+      const isRefreshTokenValid = await this.memoryStorage.validate(
         tokenId,
         receivedToken,
       );
@@ -123,7 +123,7 @@ export class AuthenticationService {
         throw new InvalidRefreshTokenException('Access denied');
 
       // -> Just sure that refresh token will be remove successfully
-      if (!(await this.redisService.remove(tokenId))) throw new Error();
+      if (!(await this.memoryStorage.remove(tokenId))) throw new Error();
 
       return this.__generateTokens(userId);
     } catch (err) {
@@ -260,7 +260,7 @@ export class AuthenticationService {
     ]);
 
     // -> Add refresh token to memory for refresh token auto detection
-    this.redisService.insert(refreshTokenId, refreshToken);
+    this.memoryStorage.insert(refreshTokenId, refreshToken);
 
     return {
       accessToken,

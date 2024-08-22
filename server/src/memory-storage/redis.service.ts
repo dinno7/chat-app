@@ -6,14 +6,17 @@ import {
 } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import { Redis, RedisKey } from 'ioredis';
-import redisConfig from './configs/redis.config';
+import redisConfig from './configs/memory-storage.config';
+import { MemoryStorageService } from './memory-storage.service';
 
 @Injectable()
-export class RedisService implements OnModuleInit, OnApplicationShutdown {
+export class RedisService
+  implements MemoryStorageService, OnModuleInit, OnApplicationShutdown
+{
   private __redisClient: Redis;
   constructor(
     @Inject(redisConfig.KEY)
-    private redisConfiguration: ConfigType<typeof redisConfig>,
+    private memoryStorageConfiguration: ConfigType<typeof redisConfig>,
   ) {}
 
   insert(key: RedisKey, value: string | number | Buffer): Promise<string> {
@@ -67,8 +70,8 @@ export class RedisService implements OnModuleInit, OnApplicationShutdown {
   }
   onModuleInit() {
     this.__redisClient = new Redis({
-      host: this.redisConfiguration.host,
-      port: this.redisConfiguration.port,
+      host: this.memoryStorageConfiguration.host,
+      port: this.memoryStorageConfiguration.port,
     });
   }
   onApplicationShutdown() {
