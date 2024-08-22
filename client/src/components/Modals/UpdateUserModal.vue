@@ -26,9 +26,9 @@ const props = defineProps({
   },
 });
 
+const uploadedFile = ref<null | File>(null);
 const updatedFields = reactive({
   name: userStore.currentUser?.name || '',
-  profilePicture: userStore.currentUser?.profilePicture || '',
 });
 
 const isUpdating = ref(false);
@@ -36,10 +36,18 @@ const isUpdating = ref(false);
 const updateUserDetails = async () => {
   if (!isFormChanged.value) return;
 
+  let uploadData: any = updatedFields;
+  if (uploadedFile.value) {
+    const formData = new FormData();
+    formData.append('profilePicture', uploadedFile.value);
+    for (let field in uploadData) {
+      formData.append(field, uploadData[field]);
+    }
+    uploadData = formData;
+  }
+
   isUpdating.value = true;
-  const { data, error } = await $useFetch('user/update')
-    .post(updatedFields)
-    .json<BasePayload<User>>();
+  const { data, error } = await $useFetch('user/update').post(uploadData).json<BasePayload<User>>();
   isUpdating.value = false;
   if (error.value) {
     return $toast.error(error.value.message || 'Some problem happened in updating user details', {
@@ -54,10 +62,10 @@ const updateUserDetails = async () => {
   }
 };
 
-const handleUploadNewProfilePicture = async () => {
-  // const file = (e.target as HTMLInputElement).files?.[0];
-  // TODO: Upload new profile picture to storage and give the url to server
-  updatedFields.profilePicture = 'https://picsum.photos/512';
+const handleUploadNewProfilePicture = async (e: Event) => {
+  const file = (e.target as HTMLInputElement).files?.[0];
+  if (!file) return;
+  uploadedFile.value = file;
 };
 </script>
 
