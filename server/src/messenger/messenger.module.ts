@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MemoryStorageModule } from 'src/memory-storage/memory-storage.module';
 import { UsersModule } from 'src/user/user.module';
+import { ConversationService } from './conversation.service';
 import { MessengerService } from './messenger.gateway';
 import { ParseMongoObjectId } from './pipes/parse-mongo-object-id.pipe';
 import {
@@ -19,6 +20,6 @@ import { Message, MessageSchema } from './schemas/message.schema';
     MemoryStorageModule,
     UsersModule,
   ],
-  providers: [MessengerService, ParseMongoObjectId],
+  providers: [MessengerService, ParseMongoObjectId, ConversationService],
 })
 export class MessengerModule {}

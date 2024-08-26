@@ -16,6 +16,7 @@ import { UserDocument } from 'src/user/schemas/users.schema';
 import { UserService } from 'src/user/user.service';
 import { ActiveSocketUser } from 'src/ws/decorators/active-socket-user.decorator';
 import { AuthenticationWsGuard } from 'src/ws/guards/authentication-ws.guard';
+import { ConversationService } from './conversation.service';
 import { ONLINE_USERS_MEMORY_STORAGE_SET_KEY } from './messenger.constants';
 import { ParseUserById } from './pipes/parse-user-by-id';
 import { Conversation } from './schemas/conversation.schema';
@@ -33,6 +34,7 @@ export class MessengerService
   constructor(
     private readonly memoryStorage: MemoryStorageService,
     private readonly userService: UserService,
+    private readonly conversationService: ConversationService,
     @InjectModel(Message.name) private readonly MessageModel: Model<Message>,
     @InjectModel(Conversation.name)
     private readonly ConversationModel: Model<Conversation>,
@@ -87,12 +89,15 @@ export class MessengerService
     @ActiveSocketUser('id') activeUserId: string,
     @MessageBody(ParseUserById) receiverUser: UserDocument,
   ) {
-    const conversationMessages = await this.__getConversationMessages(
+    const conversationMessages = await this.conversationService.getMessages(
       activeUserId,
       receiverUser.id,
     );
+
+    // INFO: Send receiver user messages to active user
     client.emit(MESSENGER_EVENTS.Message, conversationMessages);
 
+    // INFO: Send receiver user account details to active user
     return {
       event: MESSENGER_EVENTS.ConsumeReceiverUserDetails,
       data: {
