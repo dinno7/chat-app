@@ -17,6 +17,7 @@ import { UserService } from 'src/user/user.service';
 import { ActiveSocketUser } from 'src/ws/decorators/active-socket-user.decorator';
 import { AuthenticationWsGuard } from 'src/ws/guards/authentication-ws.guard';
 import { ONLINE_USERS_MEMORY_STORAGE_SET_KEY } from './messenger.constants';
+import { ParseUserById } from './pipes/parse-user-by-id';
 import { Conversation } from './schemas/conversation.schema';
 import { Message, MessageDocument } from './schemas/message.schema';
 import { MESSENGER_EVENTS } from './types/emits.type';
@@ -83,30 +84,22 @@ export class MessengerService
   @UseGuards(AuthenticationWsGuard)
   async giveReceiverUserDetails(
     @ConnectedSocket() client: Socket,
-    @ActiveSocketUser() activeUser: UserDocument,
-    @MessageBody() receiverUserId: string,
+    @ActiveSocketUser('id') activeUserId: string,
+    @MessageBody(ParseUserById) receiverUser: UserDocument,
   ) {
-    if (!this.__isValidObjectIds(activeUser.id, receiverUserId))
-      return {
-        event: MESSENGER_EVENTS.ConsumeReceiverUserDetails,
-        data: null,
-      };
-
-    const user = await this.userService.getUserById(receiverUserId);
-
     const conversationMessages = await this.__getConversationMessages(
-      activeUser.id,
-      receiverUserId,
+      activeUserId,
+      receiverUser.id,
     );
     client.emit(MESSENGER_EVENTS.Message, conversationMessages);
 
     return {
       event: MESSENGER_EVENTS.ConsumeReceiverUserDetails,
       data: {
-        email: user?.email,
-        id: user?.id,
-        name: user?.name,
-        profilePicture: user?.profilePicture,
+        email: receiverUser.email,
+        id: receiverUser.id,
+        name: receiverUser.name,
+        profilePicture: receiverUser.profilePicture,
       },
     };
   }
