@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
-  Conversation,
-  ConversationDocument,
+    Conversation,
+    ConversationDocument,
 } from './schemas/conversation.schema';
 import { Message } from './schemas/message.schema';
 
@@ -27,9 +27,11 @@ export class ConversationService {
   }
 
   async getMessagesFromConversation(conversation: ConversationDocument) {
+    if (!conversation?.messages?.length) return [];
+
     const conversationMsgs = await conversation.populate({
       path: 'messages',
-      options: { limit: 3, sort: { createdAt: -1 } },
+      options: { limit: 100, sort: { createdAt: -1 } },
     });
 
     return conversationMsgs.messages.reverse();
