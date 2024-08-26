@@ -23,6 +23,7 @@ import { MESSENGER_EVENTS } from './types/emits.type';
 @WebSocketGateway({
   cors: {
     origin: '*',
+    path: 'socket.io',
   },
 })
 export class MessengerService
