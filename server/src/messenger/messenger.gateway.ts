@@ -40,9 +40,9 @@ export class MessengerService
   server: Server;
 
   async handleConnection(@ConnectedSocket() client: Socket) {
-    const user = await this.userService.getUserByJWTToken(
-      client.handshake.auth?.token,
-    );
+    const token =
+      client.handshake.auth?.token || client.handshake.headers?.token;
+    const user = await this.userService.getUserByJWTToken(token);
     if (!user?.id) return;
 
     //? Create a room

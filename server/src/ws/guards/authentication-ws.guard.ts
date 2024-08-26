@@ -8,7 +8,9 @@ export class AuthenticationWsGuard implements CanActivate {
   constructor(private readonly userService: UserService) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const socketClient = context.switchToWs().getClient() as Socket;
-    const token = socketClient.handshake.auth?.token;
+    const token =
+      socketClient.handshake.auth?.token ||
+      socketClient.handshake.headers?.token;
 
     if (!token) return false;
 
