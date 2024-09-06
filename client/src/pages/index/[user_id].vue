@@ -9,10 +9,20 @@ import MessageHeader from '@/components/Message/Header.vue';
 import MessageInput from '@/components/Message/Input.vue';
 import MessageView from '@/components/Message/View.vue';
 import { socket } from '@/socket';
-import { watchEffect } from 'vue';
+import { useMessengerStore } from '@/store/socket/messenger';
+import { onUnmounted, watchEffect } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
+
+const messengerStore = useMessengerStore();
+
+onUnmounted(()=>{
+  messengerStore.receiverUser = null
+
+})
+
+
 watchEffect(() => {
   socket.emit('provideReceiverUserDetails', route.params.user_id || '');
   socket.emit('seen', route.params.user_id || '');
