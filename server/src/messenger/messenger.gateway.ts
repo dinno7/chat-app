@@ -1,13 +1,13 @@
 import { UseGuards } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
-  ConnectedSocket,
-  MessageBody,
-  OnGatewayConnection,
-  OnGatewayDisconnect,
-  SubscribeMessage,
-  WebSocketGateway,
-  WebSocketServer,
+    ConnectedSocket,
+    MessageBody,
+    OnGatewayConnection,
+    OnGatewayDisconnect,
+    SubscribeMessage,
+    WebSocketGateway,
+    WebSocketServer,
 } from '@nestjs/websockets';
 import { Model, isValidObjectId } from 'mongoose';
 import { Server, Socket } from 'socket.io';
@@ -219,11 +219,12 @@ export class MessengerService
       ],
     });
 
-    if (conversation?.messages)
+    if (conversation?.messages) {
       await this.MessageModel.updateMany(
         {
-          _id: { $in: conversation.messages },
+          conversation: conversation.id,
           sender: receiverUserId,
+          seen: false,
         },
         {
           $set: {
@@ -231,6 +232,7 @@ export class MessengerService
           },
         },
       );
+    }
 
     if (!conversation) return;
 
